@@ -157,7 +157,7 @@ cp .env.example .env
 2. Edit `.env` file:
 ```env
 DISCORD_TOKEN=your_discord_bot_token
-WAIFU_API_TOKEN=j6UBBh8ljk3HTVdz7kPLloZNbqhXOPmpGurtNtMiPs0
+WAIFU_API_TOKEN=your_token
 ```
 
 ### Run Bot
