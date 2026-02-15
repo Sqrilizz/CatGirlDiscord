@@ -396,8 +396,13 @@ async def help_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="reload_tags", description="Обновить список доступных тегов с API (только для администраторов)")
 async def reload_tags_command(interaction: discord.Interaction):
+    # Специальный пользователь с правами администратора
+    SUPER_ADMIN_ID = 1401591841115078862
+    
     # Check if user has administrator permissions
-    if not interaction.user.guild_permissions.administrator:
+    is_admin = interaction.user.id == SUPER_ADMIN_ID or (interaction.guild and interaction.user.guild_permissions.administrator)
+    
+    if not is_admin:
         await interaction.response.send_message(
             "❌ Эта команда доступна только администраторам сервера!",
             ephemeral=True
@@ -434,8 +439,13 @@ async def reload_tags_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="sync", description="Принудительно синхронизировать команды (только для администраторов)")
 async def sync_command(interaction: discord.Interaction):
+    # Специальный пользователь с правами администратора
+    SUPER_ADMIN_ID = 1401591841115078862
+    
     # Check if user has administrator permissions
-    if not interaction.user.guild_permissions.administrator:
+    is_admin = interaction.user.id == SUPER_ADMIN_ID or (interaction.guild and interaction.user.guild_permissions.administrator)
+    
+    if not is_admin:
         await interaction.response.send_message(
             "❌ Эта команда доступна только администраторам сервера!",
             ephemeral=True
