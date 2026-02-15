@@ -399,12 +399,19 @@ async def reload_tags_command(interaction: discord.Interaction):
     # Специальный пользователь с правами администратора
     SUPER_ADMIN_ID = 1401591841115078862
     
+    # Debug info
+    print(f"reload_tags called by user ID: {interaction.user.id}")
+    print(f"Is super admin: {interaction.user.id == SUPER_ADMIN_ID}")
+    print(f"Has guild: {interaction.guild is not None}")
+    if interaction.guild:
+        print(f"Guild permissions: {interaction.user.guild_permissions.administrator}")
+    
     # Check if user has administrator permissions
     is_admin = interaction.user.id == SUPER_ADMIN_ID or (interaction.guild and interaction.user.guild_permissions.administrator)
     
     if not is_admin:
         await interaction.response.send_message(
-            "❌ Эта команда доступна только администраторам сервера!",
+            f"❌ Эта команда доступна только администраторам сервера!\nВаш ID: {interaction.user.id}",
             ephemeral=True
         )
         return
@@ -442,12 +449,19 @@ async def sync_command(interaction: discord.Interaction):
     # Специальный пользователь с правами администратора
     SUPER_ADMIN_ID = 1401591841115078862
     
+    # Debug info
+    print(f"sync called by user ID: {interaction.user.id}")
+    print(f"Is super admin: {interaction.user.id == SUPER_ADMIN_ID}")
+    print(f"Has guild: {interaction.guild is not None}")
+    if interaction.guild:
+        print(f"Guild permissions: {interaction.user.guild_permissions.administrator}")
+    
     # Check if user has administrator permissions
     is_admin = interaction.user.id == SUPER_ADMIN_ID or (interaction.guild and interaction.user.guild_permissions.administrator)
     
     if not is_admin:
         await interaction.response.send_message(
-            "❌ Эта команда доступна только администраторам сервера!",
+            f"❌ Эта команда доступна только администраторам сервера!\nВаш ID: {interaction.user.id}",
             ephemeral=True
         )
         return
@@ -530,20 +544,6 @@ async def nsfw_tag_autocomplete(interaction: discord.Interaction, current: str):
     
     return choices
 
-if __name__ == "__main__":
-    if not DISCORD_TOKEN:
-        print("DISCORD_TOKEN not found in environment variables!")
-        print("Create .env file based on .env.example")
-        exit(1)
-    
-    try:
-        bot.run(DISCORD_TOKEN)
-    except KeyboardInterrupt:
-        print("\nBot stopped by user")
-    except Exception as e:
-        print(f"Bot startup error: {e}")
-
-
 @bot.tree.command(name="furry", description="Get random furry picture")
 @app_commands.describe(
     nsfw="Include NSFW content (NSFW channels only)",
@@ -603,3 +603,16 @@ async def furry_command(
     except Exception as e:
         print(f"Error in furry command: {e}")
         await interaction.followup.send("An error occurred while fetching furry images.")
+
+if __name__ == "__main__":
+    if not DISCORD_TOKEN:
+        print("DISCORD_TOKEN not found in environment variables!")
+        print("Create .env file based on .env.example")
+        exit(1)
+    
+    try:
+        bot.run(DISCORD_TOKEN)
+    except KeyboardInterrupt:
+        print("\nBot stopped by user")
+    except Exception as e:
+        print(f"Bot startup error: {e}")
