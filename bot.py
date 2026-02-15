@@ -5,6 +5,7 @@ import asyncio
 import random
 from typing import Optional, List
 from waifu_api import WaifuAPI
+from furry_api import FurryAPI
 from config import DISCORD_TOKEN, MAX_IMAGES_PER_REQUEST
 
 # Global cache for tags
@@ -76,11 +77,15 @@ class WaifuBot(commands.Bot):
         intents.presences = False
         super().__init__(command_prefix='!', intents=intents)
         self.waifu_api = None
+        self.furry_api = None
     
     async def setup_hook(self):
         """Called when the bot is starting up"""
         self.waifu_api = WaifuAPI()
         await self.waifu_api.__aenter__()
+        
+        self.furry_api = FurryAPI()
+        await self.furry_api.__aenter__()
         
         # Load available tags from API
         print("Loading available tags...")
@@ -127,6 +132,8 @@ class WaifuBot(commands.Bot):
         """Clean up when bot shuts down"""
         if self.waifu_api:
             await self.waifu_api.close()
+        if self.furry_api:
+            await self.furry_api.close()
 
 bot = WaifuBot()
 
@@ -355,25 +362,31 @@ async def help_command(interaction: discord.Interaction):
     
     embed.add_field(
         name="/waifu",
-        value="Получить случайную картинку\n`nsfw:` включить NSFW (только в NSFW каналах)\n`tag:` выбрать тег\n`count:` количество (1-5)",
+        value="Get random anime picture\n`nsfw:` include NSFW (NSFW channels only)\n`tag:` select tag\n`count:` number (1-5)",
         inline=False
     )
     
     embed.add_field(
         name="/nsfw",
-        value="Получить NSFW картинку (только в NSFW каналах)\n`tag:` выбрать NSFW тег\n`count:` количество (1-5)",
+        value="Get NSFW anime picture (NSFW channels only)\n`tag:` select NSFW tag\n`count:` number (1-5)",
+        inline=False
+    )
+    
+    embed.add_field(
+        name="/furry",
+        value="Get random furry picture\n`nsfw:` include NSFW (NSFW channels only)\n`tags:` search tags\n`count:` number (1-5)",
         inline=False
     )
     
     embed.add_field(
         name="/tags",
-        value="Показать доступные теги\n`nsfw:` показать NSFW теги",
+        value="Show available tags\n`nsfw:` show NSFW tags",
         inline=False
     )
     
     embed.add_field(
         name="/help",
-        value="Показать эту справку",
+        value="Show this help",
         inline=False
     )
     
@@ -519,3 +532,64 @@ if __name__ == "__main__":
         print("\nBot stopped by user")
     except Exception as e:
         print(f"Bot startup error: {e}")
+
+
+@bot.tree.command(name="furry", description="Get random furry picture")
+@app_commands.describe(
+    nsfw="Include NSFW content (NSFW channels only)",
+    tags="Search tags (space separated)",
+    count="Number of pictures (1-5)"
+)
+@app_commands.allowed_installs(guilds=True, users=True)
+@app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+async def furry_command(
+    interaction: discord.Interaction,
+    nsfw: bool = False,
+    tags: Optional[str] = None,
+    count: int = 1
+):
+    if nsfw and hasattr(interaction.channel, 'is_nsfw') and not interaction.channel.is_nsfw():
+        await interaction.response.send_message(
+            "NSFW content is only available in NSFW channels!",
+            ephemeral=True
+        )
+        return
+    
+    count = max(1, min(count, 5))
+    
+    await interaction.response.defer()
+    
+    try:
+        tag_list = tags.split() if tags else None
+        result = await bot.furry_api.get_furry_by_tags(tag_list, nsfw=nsfw, count=count) if tag_list else await bot.furry_api.get_random_furry(nsfw=nsfw, count=count)
+        
+        if not result or not result.get('images'):
+            await interaction.followup.send("No furry images found. Try different tags or parameters.")
+            return
+        
+        images = result['images']
+        
+        embeds = []
+        for i, image in enumerate(images):
+            embed = discord.Embed(
+                title=f"Furry #{i+1}" + (f" - {tags}" if tags else ""),
+                color=discord.Color.purple()
+            )
+            embed.set_image(url=image.get('url', ''))
+            
+            tags_list = image.get('tags') or []
+            tags_str = ', '.join([t.get('name', '') for t in tags_list if t and isinstance(t, dict)])
+            embed.add_field(name="Tags", value=tags_str[:100] + "..." if len(tags_str) > 100 else tags_str or "None", inline=False)
+            embed.add_field(name="Size", value=f"{image.get('width', '?')}x{image.get('height', '?')}", inline=True)
+            embed.add_field(name="Rating", value=image.get('rating', 'Unknown').upper(), inline=True)
+            embed.add_field(name="Score", value=str(image.get('score', 0)), inline=True)
+            
+            embed.set_footer(text="Powered by e621.net" if nsfw else "Powered by e926.net")
+            
+            embeds.append(embed)
+        
+        await interaction.followup.send(embeds=embeds)
+        
+    except Exception as e:
+        print(f"Error in furry command: {e}")
+        await interaction.followup.send("An error occurred while fetching furry images.")

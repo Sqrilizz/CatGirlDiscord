@@ -24,6 +24,7 @@
 **Smart Search** - Autocomplete with popular tag prioritization  
 **All API Tags** - Dynamic loading of all available tags from Waifu.im  
 **Tag Search** - Find exactly what you're looking for  
+**Furry Support** - Get furry images from e621/e926  
 **NSFW Support** - Safe access to NSFW content  
 **User App** - Works everywhere: servers, DMs, group chats  
 **Rate Limiting** - Stable operation without API errors  
@@ -58,6 +59,7 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=21474
 |---------|-------------|------------|
 | `/waifu` | Random anime picture | `nsfw`, `tag`, `count` |
 | `/nsfw` | NSFW picture | `tag`, `count` |
+| `/furry` | Random furry picture | `nsfw`, `tags`, `count` |
 | `/tags` | Show available tags | `nsfw`, `search` |
 | `/help` | Commands help | - |
 
@@ -73,6 +75,7 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=21474
 ### What Makes This Bot Special?
 
 - **All tags automatically** - Bot loads ALL available tags from API on startup
+- **Furry support** - Access to e621.net (NSFW) and e926.net (SFW) furry content
 - **Smart autocomplete** - Prioritization of popular tags and exact matches
 - **Works everywhere** - Servers, DMs, group chats
 - **Stable operation** - Automatic API rate limiting handling
@@ -184,6 +187,7 @@ python bot.py
 CatGirlDiscord/
 ├── bot.py              # Main bot file
 ├── waifu_api.py        # Waifu.im API client
+├── furry_api.py        # e621/e926 API client
 ├── config.py           # Configuration
 ├── requirements.txt    # Dependencies
 ├── README.md           # Documentation
