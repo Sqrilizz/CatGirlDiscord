@@ -406,8 +406,15 @@ async def reload_tags_command(interaction: discord.Interaction):
     if interaction.guild:
         print(f"Guild permissions: {interaction.user.guild_permissions.administrator}")
     
-    # Check if user has administrator permissions
-    is_admin = interaction.user.id == SUPER_ADMIN_ID or (interaction.guild and interaction.user.guild_permissions.administrator)
+    # Супер-админ всегда имеет доступ, независимо от контекста
+    if interaction.user.id == SUPER_ADMIN_ID:
+        is_admin = True
+    elif interaction.guild:
+        # На сервере проверяем права администратора
+        is_admin = interaction.user.guild_permissions.administrator
+    else:
+        # В других контекстах (DM, User Install) без супер-админа - нет доступа
+        is_admin = False
     
     if not is_admin:
         await interaction.response.send_message(
@@ -456,8 +463,15 @@ async def sync_command(interaction: discord.Interaction):
     if interaction.guild:
         print(f"Guild permissions: {interaction.user.guild_permissions.administrator}")
     
-    # Check if user has administrator permissions
-    is_admin = interaction.user.id == SUPER_ADMIN_ID or (interaction.guild and interaction.user.guild_permissions.administrator)
+    # Супер-админ всегда имеет доступ, независимо от контекста
+    if interaction.user.id == SUPER_ADMIN_ID:
+        is_admin = True
+    elif interaction.guild:
+        # На сервере проверяем права администратора
+        is_admin = interaction.user.guild_permissions.administrator
+    else:
+        # В других контекстах (DM, User Install) без супер-админа - нет доступа
+        is_admin = False
     
     if not is_admin:
         await interaction.response.send_message(
